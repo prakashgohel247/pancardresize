@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAN Card Resizer Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs/dist/cropper.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        #dropzone {
+            border: 5px solid;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            border-image-source: linear-gradient(45deg, #ff0000, #ff7300, #ffeb00, #47ff00, #00ffee, #2a00ff, #ff00eb, #ff0000);
+            border-image-slice: 1;
+            animation: borderAnimation 5s linear infinite;
+        }
+
+        @keyframes borderAnimation {
+            0% {
+                border-image-source: linear-gradient(0deg, #ff0000, #ff7300, #ffeb00, #47ff00, #00ffee, #2a00ff, #ff00eb, #ff0000);
+            }
+            100% {
+                border-image-source: linear-gradient(360deg, #ff0000, #ff7300, #ffeb00, #47ff00, #00ffee, #2a00ff, #ff00eb, #ff0000);
+            }
+        }
+
+        canvas {
+            display: none;
+        }
+
+        #previewImage {
+            margin-top: 10px;
+            max-width: 100%;
+            display: block;
+            border: 3px solid #2c3e50;
+            border-radius: 10px;
+        }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #fff;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input, select {
+            margin: 5px;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: auto;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        div {
+            margin-bottom: 15px;
+        }
+        .button-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px;
+}
+
+.responsive-button {
+    padding: 12px 25px;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+    width: auto;
+    transition: background-color 0.3s ease;
+    color: white;
+}
+
+.responsive-button:hover {
+    opacity: 0.8;
+}
+
+.youtube-button {
+    background-color: #FF0000; /* YouTube Red */
+}
+
+.twitter-button {
+    background-color: #1DA1F2; /* Twitter Blue */
+}
+
+.facebook-button {
+    background-color: #1877F2; /* Facebook Blue */
+}
+
+.instagram-button {
+    background-color: #E4405F; /* Instagram Pink */
+}
+
+.google-maps-button {
+    background-color: #4285F4; /* Google Maps Blue */
+}
+
+@media (max-width: 768px) {
+    .responsive-button {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+<h1>PAN Card Resizer Tool</h1>
+
+<!-- Upload Section -->
+<div id="dropzone">Drag and drop your images here or click to upload</div>
+<input type="file" id="imageInput" accept="image/*" multiple style="display:none;" />
+
+<!-- Options Section -->
+<div>
+    <label for="customWidth">Width:</label>
+    <input type="number" id="customWidth" placeholder="Enter width" />
+
+    <label for="customHeight">Height:</label>
+    <input type="number" id="customHeight" placeholder="Enter height" />
+
+    <label for="formatSelect">Format:</label>
+    <select id="formatSelect">
+        <option value="image/png">PNG</option>
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/webp">WebP</option>
+    </select>
+
+    <label for="qualityRange">Quality:</label>
+    <input type="range" id="qualityRange" min="0.1" max="1" step="0.1" value="1" />
+
+    <label for="filterSelect">Filter:</label>
+    <select id="filterSelect">
+        <option value="none">None</option>
+        <option value="grayscale(100%)">Grayscale</option>
+        <option value="sepia(100%)">Sepia</option>
+        <option value="brightness(150%)">Brightness</option>
+    </select>
+</div>
+
+<!-- Action Buttons -->
+<button id="resizeButton">Resize</button>
+<button id="downloadButton">Download</button>
+<button id="darkModeToggle">Toggle Dark Mode</button>
+
+<!-- Preview Section -->
+<img id="previewImage" alt="Resized PAN Card Preview" />
+
+<canvas id="canvas"></canvas>
+<br>
+
+<div class="button-container">
+    <a href="https://www.freakyfontsgen.site/" class="responsive-button youtube-button">Freaky Text Converter</a>
+    <a href="https://www.iframegeneratorpro.site/" class="responsive-button twitter-button">Iframe Generator</a>
+    < a href="https://pancardresizertool.blogspot.com/" class="responsive-button> Pan Card Resize tool </a>
+</div>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/cropperjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver"></script>
+<script>
+    const dropzone = document.getElementById('dropzone');
+    const imageInput = document.getElementById('imageInput');
+    const customWidthInput = document.getElementById('customWidth');
+    const customHeightInput = document.getElementById('customHeight');
+    const formatSelect = document.getElementById('formatSelect');
+    const qualityRange = document.getElementById('qualityRange');
+    const filterSelect = document.getElementById('filterSelect');
+    const resizeButton = document.getElementById('resizeButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const previewImage = document.getElementById('previewImage');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentImage = null;
+    let cropper = null;
+
+    // Drag and Drop Logic
+    dropzone.addEventListener('click', () => imageInput.click());
+    dropzone.addEventListener('dragover', (e) => e.preventDefault());
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    });
+
+    imageInput.addEventListener('change', (e) => {
+        const files = e.target.files;
+        handleFiles(files);
+    });
+
+    function handleFiles(files) {
+        const file = files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                loadImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function loadImage(src) {
+        const img = new Image();
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            currentImage = img;
+
+            if (cropper) {
+                cropper.destroy();
+            }
+            cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1, autoCropArea: 1 });
+        };
+        img.src = src;
+    }
+
+    // Resize Logic
+    resizeButton.addEventListener('click', () => {
+        if (!currentImage) return;
+
+        const customWidth = parseInt(customWidthInput.value) || currentImage.width;
+        const customHeight = parseInt(customHeightInput.value) || currentImage.height;
+        const filter = filterSelect.value;
+
+        canvas.width = customWidth;
+        canvas.height = customHeight;
+        ctx.filter = filter;
+        ctx.drawImage(currentImage, 0, 0, customWidth, customHeight);
+
+        const resizedImageURL = canvas.toDataURL(formatSelect.value, parseFloat(qualityRange.value));
+        previewImage.src = resizedImageURL;
+    });
+
+    // Download Logic
+    downloadButton.addEventListener('click', () => {
+        const format = formatSelect.value.split('/')[1];
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL(formatSelect.value, parseFloat(qualityRange.value));
+        link.download = `resized-image.${format}`;
+        link.click();
+    });
+
+    // Toggle Dark Mode
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+    });
+</script>
+
+</body>
+</html>
